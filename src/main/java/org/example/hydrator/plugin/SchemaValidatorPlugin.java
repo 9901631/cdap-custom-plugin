@@ -11,10 +11,12 @@ import io.cdap.cdap.api.plugin.PluginConfig;
 import io.cdap.cdap.etl.api.*;
 
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +65,7 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
         //Schema oschema;
         Schema inputSchema = pipelineConfigurer.getStageConfigurer().getInputSchema();
         System.out.println("configurePipeline input schema  -"+inputSchema);
-        config.validate(inputSchema);
+        //config.validate(inputSchema);
 
 
         String jsonSchemaString = "";
@@ -76,13 +78,13 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
         //config.validate(fileContent);
         try {
             // to read from local file
-            //File schemaFile = new File(SchemaPath);
-            //String jsonSchemaString = FileUtils.readFileToString(schemaFile, StandardCharsets.UTF_8);
+//            String SchemaPath = "/usr/data/schema/int-schema.json";
+//            File schemaFile = new File(SchemaPath);
+//            jsonSchemaString = FileUtils.readFileToString(schemaFile, StandardCharsets.UTF_8);
 
             //to read from GCS bucket
             Storage storage = StorageOptions.getDefaultInstance().getService();
             Blob blob = storage.get(config.gcsBucket.toString(),config.schemaPath.toString());
-            //Blob blob = storage.get("cdf-schema-validator","int-schema.json");
             jsonSchemaString = new String(blob.getContent());
             LOG.info("jsonSchemaString :" + jsonSchemaString);
 
@@ -134,11 +136,12 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
      */
     @Override
     public void transform(StructuredRecord input, Emitter<StructuredRecord> emitter) throws Exception {
-        // Get all the fields that are in the output schema
+        // Get all the outputFields that are in the output schema
 
-        List<Schema.Field> fields = outputSchema.getFields();
-        System.out.println("outputSchema - "+outputSchema);
-        System.out.println("fields - "+fields);
+        List<Schema.Field> inputFields = input.getSchema().getFields();
+        List<Schema.Field> outputFields = outputSchema.getFields();
+        System.out.println("input Fields - "+inputFields);
+        System.out.println("output Fields - "+outputFields);
 
         // Create a builder for creating the output records
         StructuredRecord.Builder builder = StructuredRecord.builder(outputSchema);
@@ -154,7 +157,7 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
         ArrayList<String> inputSchema = new ArrayList<>();
 
         int i = 0;
-        for (Schema.Field fd : fields) {
+        for (Schema.Field fd : outputFields) {
             if (fd.getSchema().getLogicalType() == null) {
                 inputSchema.add(fd.getSchema().toString().toLowerCase().replace("\"", ""));
             }
@@ -176,16 +179,19 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
         int iterator = 0;
 
         // Add all the values to the builder
-        for (Schema.Field field : fields) {
+        for (Schema.Field field : outputFields) {
 
-            String name = field.getName();
-            System.out.println("input name - " + input.get(name));
+            String oName = field.getName();
+            String iName = inputFields.get(iterator).getName();
+            System.out.println("input field name ---> " + iName);
+            System.out.println("input name ---> " + input.get(iName));
+            System.out.println("output field name ---> " + oName);
 
-            if (input.get(name) != null) {
+            if (input.get(iName) != null) {
 
-                // Comparing fields for schema validation
+                // Comparing outputFields for schema validation
             /*
-            1. Establish a list of fields and data types from GCS schema bucket
+            1. Establish a list of outputFields and data types from GCS schema bucket
             2. Use a for loop to compare each field of the raw data to schema data types
                Can use built-in Java functions for thi
             3. Records that pass the validation should be emitted
@@ -197,28 +203,28 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
                     LOG.info("int herestart");
                     System.out.println("int herestart");
                     LOG.info(inputSchema.get(iterator));
-                    numberTryParse(input.get(name), inputSchema.get(iterator));
+                    numberTryParse(input.get(iName), inputSchema.get(iterator));
                 }
 
                 // Validates strings
                 else if (inputSchema.get(iterator).equals("string")) {
-                    stringTryParse(input.get(name));
+                    stringTryParse(input.get(iName));
                 }
 
                 // Validates booleans
                 else if (inputSchema.get(iterator).equals("boolean")) {
-                    booleanTryParse(input.get(name));
+                    booleanTryParse(input.get(iName));
                 }
 
                 // Validates byte arrays
                 else if (inputSchema.get(iterator).equals("bytes")) {
                     LOG.info("has reached");
-                    byteTryParse(input.get(name));
+                    byteTryParse(input.get(iName));
                 }
 
                 // Validates simple dates
                 else if (inputSchema.get(iterator).equals("date")) {
-                    simpleDateTryParse(input.get(name));
+                    simpleDateTryParse(input.get(iName));
                     LOG.info("here1");
                 }
 
@@ -226,13 +232,13 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
                 else if (inputSchema.get(iterator).matches("timestamp_micros|timestamp_millis")) {
                     LOG.info("timestamp reached");
                     LOG.info("timestamp reached");
-                    timestampTryParse(input.get(name), inputSchema.get(iterator));
+                    timestampTryParse(input.get(iName), inputSchema.get(iterator));
 
                     LOG.info("done");
                 }
 
                 else if (inputSchema.get(iterator).matches("time_micros|time_millis")) {
-                    timeTryParse(input.get(name), inputSchema.get(iterator));
+                    timeTryParse(input.get(iName), inputSchema.get(iterator));
                 }
 
                 LOG.info("Current record " + validRecordList.get(iterator));
@@ -244,28 +250,28 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
 
         LOG.info("Finished validation");
         System.out.println("Finished validation");
-        LOG.info(String.valueOf(fields.size()));
-        System.out.println("Fileds Size "+String.valueOf(fields.size()));
+        LOG.info(String.valueOf(outputFields.size()));
+        System.out.println("Fileds Size "+String.valueOf(outputFields.size()));
         System.out.println("Valid RecordList Size "+String.valueOf(validRecordList.size()));
         LOG.warn(String.valueOf(validRecordList.size()));
 
         int rt = 0;
         // No errors
         if (result == 1) {
-            while (rt < fields.size()) {
-                System.out.println("name :" + fields.get(rt).getName());
-                String record = fields.get(rt).getName() + "|" + validRecordList.get(rt);
+            while (rt < outputFields.size()) {
+                System.out.println("name :" + outputFields.get(rt).getName());
+                String record = outputFields.get(rt).getName() + "|" + validRecordList.get(rt);
                 System.out.println("record "+record);
-                LOG.info("Success" + fields.get(rt).getName() + "|" + validRecordList.get(rt));
-                builder.set(fields.get(rt).getName(), validRecordList.get(rt));
+                LOG.info("Success" + outputFields.get(rt).getName() + "|" + validRecordList.get(rt));
+                builder.set(outputFields.get(rt).getName(), validRecordList.get(rt));
                 rt++;
             }
         }
         else if (result == 2) {
-            while (rt < fields.size()) {
-                LOG.info("Invalid" + fields.get(rt).getName() + "|" + validRecordList.get(rt));
-                //LOG.info(fields.get(rt).getSchema());
-                error.set(fields.get(rt).getName(), validRecordList.get(rt).toString());
+            while (rt < outputFields.size()) {
+                LOG.info("Invalid" + outputFields.get(rt).getName() + "|" + validRecordList.get(rt));
+                //LOG.info(outputFields.get(rt).getSchema());
+                error.set(inputFields.get(rt).getName(), validRecordList.get(rt).toString());
                 rt++;
             }
         }
@@ -289,13 +295,13 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
      * @return returns field names and record values
      */
     private static Schema getOutputSchema(Config config, Schema inputSchema) {
-        List<Schema.Field> fields = new ArrayList<>();
+        List<Schema.Field> outputFields = new ArrayList<>();
 
-        fields.add(Schema.Field.of("name", Schema.of(Schema.Type.STRING)));
-        fields.add(Schema.Field.of("age", Schema.of(Schema.Type.INT)));
-        //fields.add(Schema.Field.of("date", Schema.of(Schema.Type.STRING)));
+        outputFields.add(Schema.Field.of("name", Schema.of(Schema.Type.STRING)));
+        outputFields.add(Schema.Field.of("age", Schema.of(Schema.Type.INT)));
+        //outputFields.add(Schema.Field.of("date", Schema.of(Schema.Type.STRING)));
 
-        return Schema.recordOf(inputSchema.getRecordName(), fields);
+        return Schema.recordOf(inputSchema.getRecordName(), outputFields);
     }
 
     /**
@@ -307,7 +313,7 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
     }
 
     /**
-     * Your plugin's configuration class. The fields here will correspond to the fields in the UI for configuring the
+     * Your plugin's configuration class. The outputFields here will correspond to the outputFields in the UI for configuring the
      * plugin.
      */
     public static class Config extends PluginConfig {
@@ -339,8 +345,7 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
                 throw new IllegalArgumentException("myOption is a required field.");
             }
             // You can use the containsMacro() function to determine if you can validate at deploy time or runtime.
-            // If your plugin depends on fields from the input schema being present or the right type, use inputSchema
+            // If your plugin depends on outputFields from the input schema being present or the right type, use inputSchema
         }
     }
 }
-

@@ -1,0 +1,10 @@
+{
+  "properties": {
+    "widgets.SchemaValidator-transform": "{\n  \"outputs\": [{\n    \"name\": \"schema\",\n    \"widget-type\": \"schema\",\n    \"label\": \"schema\"\n  }],\n  \"metadata\": {\"spec-version\": \"1.0\"},\n  \"configuration-groups\": [{\n    \"label\": \"Schema Validator Plugin\",\n    \"properties\": [{\n      \"widget-type\": \"textbox\",\n      \"name\": \"field\",\n      \"label\": \"Path name to schema\",\n      \"widget-attributes\": {\n        \"default\": \"Format: \\\"/path/schema.json\\\"\",\n        \"width\": \"large\"\n      }\n    }]\n  }],\n  \"emit-errors\": true\n}",
+    "doc.SchemaValidator-transform": "# SchemaValidator Transform\r\n\r\nInsert documentation about your plugin in this file.\r\nThe UI will display the contents in the reference section of your plugin,\r\nassuming this file is named following a convention of ``[plugin-name]-transform.md``.\r\nThe plugin name is case sensitive.\r\n\r\nFor examples of plugin documentation, see the\r\n[Hydrator documentation](https://github.com/caskdata/hydrator-plugins/tree/develop/core-plugins/docs)."
+  },
+  "parents": [
+    "system:cdap-data-pipeline[6.8.0,7.0.0-SNAPSHOT)",
+    "system:cdap-data-streams[6.8.0,7.0.0-SNAPSHOT)"
+  ]
+}

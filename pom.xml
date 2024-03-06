@@ -42,66 +42,107 @@
       <groupId>io.cdap.cdap</groupId>
       <artifactId>cdap-api</artifactId>
       <version>${cdap.version}</version>
-      <scope>provided</scope>
+<!--      <scope>provided</scope>-->
+      <exclusions>
+        <exclusion>
+          <artifactId>xml-apis</artifactId>
+          <groupId>xml-apis</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.cdap.cdap</groupId>
       <artifactId>cdap-etl-api</artifactId>
       <version>${cdap.version}</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>xml-apis</artifactId>
+          <groupId>xml-apis</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
-
-
     <dependency>
       <groupId>io.cdap.cdap</groupId>
       <artifactId>cdap-unit-test</artifactId>
       <version>${cdap.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>xml-apis</artifactId>
+          <groupId>xml-apis</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.cdap.plugin</groupId>
       <artifactId>hydrator-common</artifactId>
       <version>${cdap.plugin.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>xml-apis</artifactId>
+          <groupId>xml-apis</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.cdap.cdap</groupId>
       <artifactId>hydrator-test</artifactId>
       <version>${cdap.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>xml-apis</artifactId>
+          <groupId>xml-apis</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
-    <!--
-    <dependency>
-      <groupId>jdk.tools</groupId>
-      <artifactId>jdk.tools</artifactId>
-      <version>1.8.0</version>
-      <scope>system</scope>
-      <systemPath>/usr/lib/jvm/java-1.8.0-openjdk-amd64/lib/tools.jar</systemPath>
-    </dependency>
-    -->
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-bigquery</artifactId>
       <version>2.9.4</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>xml-apis</artifactId>
+          <groupId>xml-apis</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-storage</artifactId>
       <version>2.18.0</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>xml-apis</artifactId>
+          <groupId>xml-apis</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
-    <dependency>
-      <groupId>io.cdap.cdap</groupId>
-      <artifactId>cdap-common</artifactId>
-      <version>6.9.1</version>
-    </dependency>
-
+<!--    <dependency>-->
+<!--      <groupId>io.cdap.cdap</groupId>-->
+<!--      <artifactId>cdap-common</artifactId>-->
+<!--      <version>LATEST</version>-->
+<!--      <exclusions>-->
+<!--        <exclusion>-->
+<!--          <artifactId>xml-apis</artifactId>-->
+<!--          <groupId>xml-apis</groupId>-->
+<!--        </exclusion>-->
+<!--      </exclusions>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>31.1-jre</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>xml-apis</artifactId>
+          <groupId>xml-apis</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
-
   </dependencies>
   <build>
     <plugins>

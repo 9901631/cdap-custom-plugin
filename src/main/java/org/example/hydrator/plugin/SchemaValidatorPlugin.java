@@ -11,12 +11,11 @@ import io.cdap.cdap.api.plugin.PluginConfig;
 import io.cdap.cdap.etl.api.*;
 
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,7 +85,7 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
             Storage storage = StorageOptions.getDefaultInstance().getService();
             Blob blob = storage.get(config.gcsBucket.toString(),config.schemaPath.toString());
             jsonSchemaString = new String(blob.getContent());
-            LOG.info("jsonSchemaString :" + jsonSchemaString);
+            LOG.info("jsonSchemaString -- :" + jsonSchemaString);
 
             // Removes all whitespace
             jsonSchemaString = jsonSchemaString.replaceAll("\\s", "");
@@ -95,6 +94,7 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
             // Remove last two characters
             jsonSchemaString = jsonSchemaString.substring(0, jsonSchemaString.length() - 2);
             System.out.println("jsonschema after cleansing--:" + jsonSchemaString);
+            LOG.info("jsonschema after cleansing-- :" + jsonSchemaString);
             // Finally parses schema
             outputSchema = Schema.parseJson(jsonSchemaString);
 
@@ -118,8 +118,10 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
     public void initialize(TransformContext context) throws Exception {
         super.initialize(context);
         System.out.println("Inside initialize method -");
+        LOG.info("Inside initialize method -");
         outputSchema=context.getOutputSchema();
         System.out.println("OutputSchema - "+outputSchema);
+        LOG.info("OutputSchema -"+outputSchema);
 
         // Use only for testing framework
         // outputSchema = getOutputSchema(config, inputSchema);
@@ -137,12 +139,13 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
     @Override
     public void transform(StructuredRecord input, Emitter<StructuredRecord> emitter) throws Exception {
         // Get all the outputFields that are in the output schema
-
+        LOG.info("inside transform - ");
         List<Schema.Field> inputFields = input.getSchema().getFields();
         List<Schema.Field> outputFields = outputSchema.getFields();
         System.out.println("input Fields - "+inputFields);
         System.out.println("output Fields - "+outputFields);
-
+        LOG.info("input Fields - "+inputFields);
+        LOG.info("output Fields - "+outputFields);
         // Create a builder for creating the output records
         StructuredRecord.Builder builder = StructuredRecord.builder(outputSchema);
         // Create a builder for creating the error records
@@ -336,7 +339,9 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
             // the JSON config directly and make mistakes.
             try {
                 System.out.println("validate input Schema "+inputSchema.toString());
+                LOG.info("validate input Schema  :" + inputSchema.toString());
                 Schema.parseJson(inputSchema.toString());
+                LOG.info("validate input Schema post parseJson :" + inputSchema);
             } catch (IOException e) {
                 throw new IllegalArgumentException("Output schema cannot be parsed.", e);
             }

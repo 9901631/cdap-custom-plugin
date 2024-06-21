@@ -78,14 +78,14 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
         //config.validate(fileContent);
         try {
             // to read from local file
-//            String SchemaPath = "/usr/data/schema/int-schema.json";
-//            File schemaFile = new File(SchemaPath);
-//            jsonSchemaString = FileUtils.readFileToString(schemaFile, StandardCharsets.UTF_8);
+            String SchemaPath = "/usr/data/schema/int-schema.json";
+            File schemaFile = new File(SchemaPath);
+            jsonSchemaString = FileUtils.readFileToString(schemaFile, StandardCharsets.UTF_8);
 
             //to read from GCS bucket
-            Storage storage = StorageOptions.getDefaultInstance().getService();
-            Blob blob = storage.get(config.gcsBucket.toString(),config.schemaPath.toString());
-            jsonSchemaString = new String(blob.getContent());
+//            Storage storage = StorageOptions.getDefaultInstance().getService();
+//            Blob blob = storage.get(config.gcsBucket.toString(),config.schemaPath.toString());
+//            jsonSchemaString = new String(blob.getContent());
             LOG.info("jsonSchemaString :" + jsonSchemaString);
 
             // Removes all whitespace
@@ -325,6 +325,7 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
         @Description("This specifies the schema object path")
         @Macro // <- Macro means that the value will be substituted at runtime by the user.
         private final String schemaPath;
+
 
         public Config(String schemaPath, String gcsBucket) {
             this.schemaPath = schemaPath;

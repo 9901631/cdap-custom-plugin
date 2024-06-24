@@ -34,8 +34,8 @@ public class SchemaValidatorPluginTest {
                                                       Schema.Field.of("e", Schema.of(Schema.Type.STRING)));
   @Test
   public void testMyTransform() throws Exception {
-    SchemaValidatorPlugin.Config config = new SchemaValidatorPlugin.Config("SomeValue", INPUT.toString());
-    Transform<StructuredRecord, StructuredRecord> transform = new SchemaValidatorPlugin(config);
+    SchemaValidator.Config config = new SchemaValidator.Config("SomeValue", INPUT.toString());
+    Transform<StructuredRecord, StructuredRecord> transform = new SchemaValidator(config);
     transform.initialize(null);
 
     MockEmitter<StructuredRecord> emitter = new MockEmitter<>();

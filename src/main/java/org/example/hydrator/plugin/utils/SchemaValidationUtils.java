@@ -13,7 +13,7 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
-import static org.example.hydrator.plugin.SchemaValidatorPlugin.*;
+import static org.example.hydrator.plugin.SchemaValidator.*;
 
 public class SchemaValidationUtils {
     private static final Logger LOG = LoggerFactory.getLogger(SchemaValidationUtils.class);
@@ -40,7 +40,7 @@ public class SchemaValidationUtils {
                     validRecordList.add(recordValue);
 
                     errorMsg = errorMsg + recordValue + " doesn't match schema type (INT)\n";
-                    LOG.info(errorMsg);
+                    LOG.error(errorMsg);
 
                 }
                 break;
@@ -58,7 +58,7 @@ public class SchemaValidationUtils {
 
                     errorMsg = errorMsg + recordValue + "doesn't match schema type (FLOAT)\n";
 
-                    System.out.print("Exception:" + e);
+                    LOG.error(errorMsg);
                 }
                 break;
 
@@ -74,7 +74,8 @@ public class SchemaValidationUtils {
 
                     errorMsg = errorMsg + recordValue + " doesn't match schema type (DOUBLE)\n";
 
-                    System.out.print("Exception:" + e);
+                    LOG.error(errorMsg);
+
                 }
                 break;
 
@@ -90,9 +91,8 @@ public class SchemaValidationUtils {
                     validRecordList.add(recordValue);
 
                     errorMsg = errorMsg + recordValue + " doesn't match schema type (LONG)\n";
-                    LOG.info(errorMsg);
+                    LOG.error(errorMsg);
 
-                    System.out.print("Exception:" + e);
                 }
                 break;
         }
@@ -102,7 +102,6 @@ public class SchemaValidationUtils {
      * @param recordValue Record value
      */
     public static void stringTryParse (String recordValue) {
-        System.out.print("recordValue String: " + recordValue);
         validRecordList.add(recordValue);
     }
 
@@ -139,6 +138,7 @@ public class SchemaValidationUtils {
             validRecordList.add(recordValue);
 
             errorMsg = errorMsg + recordValue + " doesn't match schema type (DATE)\n";
+            LOG.error(errorMsg);
 
         }
         catch (ParseException e) {
@@ -147,6 +147,7 @@ public class SchemaValidationUtils {
             validRecordList.add(recordValue);
 
             errorMsg = errorMsg + recordValue + " doesn't match schema type (DATE)\n";
+            LOG.error(errorMsg);
         }
     }
 
@@ -181,6 +182,7 @@ public class SchemaValidationUtils {
                     validRecordList.add(recordValue);
 
                     errorMsg = errorMsg + recordValue + " doesn't match schema type (TIMESTAMP_MILLIS)\n";
+                    LOG.error(errorMsg);
                 }
 
                 break;
@@ -206,6 +208,7 @@ public class SchemaValidationUtils {
                     validRecordList.add(recordValue);
 
                     errorMsg = errorMsg + recordValue + " doesn't match schema type (TIMESTAMP_MICROS)\n";
+                    LOG.error(errorMsg);
                 }
                 break;
         }

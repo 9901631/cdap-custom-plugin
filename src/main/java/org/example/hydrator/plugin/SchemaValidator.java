@@ -24,9 +24,9 @@ import static org.example.hydrator.plugin.utils.SchemaValidationUtils.*;
 @Plugin(type = Transform.PLUGIN_TYPE)
 @Name("SchemaValidator") // <- The name of the plugin should match the name of the docs and widget json files.
 @Description("Performs schema validation")
-public class SchemaValidatorPlugin extends Transform<StructuredRecord, StructuredRecord> {
+public class SchemaValidator extends Transform<StructuredRecord, StructuredRecord> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SchemaValidatorPlugin.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SchemaValidator.class);
     private final Config config;
     private Schema outputSchema;
 
@@ -41,7 +41,7 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
     public static String errorMsg = "";
     private static String jsonSchemaString = "";
 
-    public SchemaValidatorPlugin(Config config) {
+    public SchemaValidator(Config config) {
         this.config = config;
     }
 
@@ -63,7 +63,6 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
          */
         //Schema oschema;
         Schema inputSchema = pipelineConfigurer.getStageConfigurer().getInputSchema();
-        System.out.println("configurePipeline input schema  -"+inputSchema);
         //config.validate(inputSchema);
 
 
@@ -93,7 +92,6 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
             jsonSchemaString = jsonSchemaString.replaceAll("\\[\\{\"name\":\"etlSchemaBody\",\"schema\":", "");
             // Remove last two characters
             jsonSchemaString = jsonSchemaString.substring(0, jsonSchemaString.length() - 2);
-            System.out.println("jsonschema after cleansing--:" + jsonSchemaString);
             LOG.info("jsonschema after cleansing-- :" + jsonSchemaString);
             // Finally parses schema
             outputSchema = Schema.parseJson(jsonSchemaString);
@@ -117,14 +115,9 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
     @Override
     public void initialize(TransformContext context) throws Exception {
         super.initialize(context);
-        System.out.println("Inside initialize method -");
         LOG.info("Inside initialize method -");
         outputSchema=context.getOutputSchema();
-        System.out.println("OutputSchema - "+outputSchema);
         LOG.info("OutputSchema -"+outputSchema);
-
-        // Use only for testing framework
-        // outputSchema = getOutputSchema(config, inputSchema);
 
     }
 
@@ -142,8 +135,6 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
         LOG.info("inside transform - ");
         List<Schema.Field> inputFields = input.getSchema().getFields();
         List<Schema.Field> outputFields = outputSchema.getFields();
-        System.out.println("input Fields - "+inputFields);
-        System.out.println("output Fields - "+outputFields);
         LOG.info("input Fields - "+inputFields);
         LOG.info("output Fields - "+outputFields);
         // Create a builder for creating the output records
@@ -168,13 +159,9 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
                 inputSchema.add(fd.getSchema().getLogicalType().toString().toLowerCase().replace("\"", ""));
             }
             LOG.info("Logical type:" + fd.getSchema().getLogicalType());
-            System.out.println("name :" + fd.getName());
-            System.out.println("Logical type:" + fd.getSchema().getLogicalType());
             LOG.info("Type:" + fd.getSchema().getType());
-            System.out.println("Type:" + fd.getSchema().getType());
             LOG.info(fd.getSchema().toString());
             LOG.info("Input schema:" + inputSchema.get(i));
-            System.out.println("Input schema:" + inputSchema.get(i));
             i++;
         }
 
@@ -186,10 +173,6 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
 
             String oName = field.getName();
             String iName = inputFields.get(iterator).getName();
-            System.out.println("input field name ---> " + iName);
-            System.out.println("input name ---> " + input.get(iName));
-            System.out.println("output field name ---> " + oName);
-
             if (input.get(iName) != null) {
 
                 // Comparing outputFields for schema validation
@@ -201,10 +184,7 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
             */
 
                 // Validates numbers
-                System.out.println("input schem++++ - " + inputSchema.get(iterator));
                 if (inputSchema.get(iterator).matches("int|float|double|long")) {
-                    LOG.info("int herestart");
-                    System.out.println("int herestart");
                     LOG.info(inputSchema.get(iterator));
                     numberTryParse(input.get(iName), inputSchema.get(iterator));
                 }
@@ -221,14 +201,12 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
 
                 // Validates byte arrays
                 else if (inputSchema.get(iterator).equals("bytes")) {
-                    LOG.info("has reached");
                     byteTryParse(input.get(iName));
                 }
 
                 // Validates simple dates
                 else if (inputSchema.get(iterator).equals("date")) {
                     simpleDateTryParse(input.get(iName));
-                    LOG.info("here1");
                 }
 
                 // Validates timestamps
@@ -236,15 +214,13 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
                     LOG.info("timestamp reached");
                     LOG.info("timestamp reached");
                     timestampTryParse(input.get(iName), inputSchema.get(iterator));
-
-                    LOG.info("done");
                 }
 
                 else if (inputSchema.get(iterator).matches("time_micros|time_millis")) {
                     timeTryParse(input.get(iName), inputSchema.get(iterator));
                 }
 
-                LOG.info("Current record " + validRecordList.get(iterator));
+                //LOG.info("Current record " + validRecordList.get(iterator));
                 iterator++;
             }
         }
@@ -252,19 +228,15 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
         int result = setRecords();
 
         LOG.info("Finished validation");
-        System.out.println("Finished validation");
+
         LOG.info(String.valueOf(outputFields.size()));
-        System.out.println("Fileds Size "+String.valueOf(outputFields.size()));
-        System.out.println("Valid RecordList Size "+String.valueOf(validRecordList.size()));
         LOG.warn(String.valueOf(validRecordList.size()));
 
         int rt = 0;
         // No errors
         if (result == 1) {
             while (rt < outputFields.size()) {
-                System.out.println("name :" + outputFields.get(rt).getName());
                 String record = outputFields.get(rt).getName() + "|" + validRecordList.get(rt);
-                System.out.println("record "+record);
                 LOG.info("Success" + outputFields.get(rt).getName() + "|" + validRecordList.get(rt));
                 builder.set(outputFields.get(rt).getName(), validRecordList.get(rt));
                 rt++;
@@ -338,7 +310,6 @@ public class SchemaValidatorPlugin extends Transform<StructuredRecord, Structure
             // It's usually a good idea to check the schema. Sometimes users edit
             // the JSON config directly and make mistakes.
             try {
-                System.out.println("validate input Schema "+inputSchema.toString());
                 LOG.info("validate input Schema  :" + inputSchema.toString());
                 Schema.parseJson(inputSchema.toString());
                 LOG.info("validate input Schema post parseJson :" + inputSchema);
